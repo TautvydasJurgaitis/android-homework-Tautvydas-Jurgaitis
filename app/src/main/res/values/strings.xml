@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Demo Vinted</string>
+    <string name="price">Price:</string>
+    <string name="brand">Brand:</string>
+    <string name="size">Size:</string>
+    <string name="buy">Buy</string>
+</resources>
