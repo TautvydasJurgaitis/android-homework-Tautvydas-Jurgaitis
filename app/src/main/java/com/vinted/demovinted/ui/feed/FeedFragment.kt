@@ -40,6 +40,10 @@ class FeedFragment : Fragment() {
         viewModel.requestMore()
     }
 
+    private val itemSeenListener: ItemSeenScrollListener = ItemSeenScrollListener() {
+        viewModel.sendSeenItems(items, it) // post to backend
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?): View {
 
@@ -55,6 +59,7 @@ class FeedFragment : Fragment() {
             adapter = feedAdapter
             (layoutManager as GridLayoutManager).spanCount = 2
             addOnScrollListener(scrollListener)
+            addOnScrollListener(itemSeenListener)
             addItemDecoration(EvenSpacingItemDecorator((resources.displayMetrics.density * 8).toInt()))
         }
     }
