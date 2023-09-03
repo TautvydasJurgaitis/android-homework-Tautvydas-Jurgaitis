@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.SearchView
 import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
@@ -23,7 +24,7 @@ import kotlinx.android.synthetic.main.feed_fragment.*
 class FeedFragment : Fragment() {
 
     private val viewModel: FeedViewModel by viewModels()
-    private val items = mutableListOf<ItemBoxViewEntity>()
+    private var items = mutableListOf<ItemBoxViewEntity>()
 
     private val itemClickListener: (ItemBoxViewEntity) -> Unit = {
         val fragment = ItemDetailsFragment.newInstance(it)
@@ -38,6 +39,7 @@ class FeedFragment : Fragment() {
 
     private val scrollListener: EndlessScrollListener = EndlessScrollListener(ITEMS_PER_PAGE) {
         viewModel.requestMore()
+    //    viewModel.searchItems("")
     }
 
     private val itemSeenListener: ItemSeenScrollListener = ItemSeenScrollListener() {
@@ -55,6 +57,13 @@ class FeedFragment : Fragment() {
         viewModel.feedStatus.observe(viewLifecycleOwner, Observer { status ->
             handleNewStatus(status)
         })
+
+        viewModel.feed.observe(viewLifecycleOwner, Observer {
+            items = it.toMutableList()
+            feedAdapter.setData(items)
+            feedAdapter.notifyDataSetChanged()
+        })
+
         feed_list.apply {
             adapter = feedAdapter
             (layoutManager as GridLayoutManager).spanCount = 2
@@ -62,6 +71,22 @@ class FeedFragment : Fragment() {
             addOnScrollListener(itemSeenListener)
             addItemDecoration(EvenSpacingItemDecorator((resources.displayMetrics.density * 8).toInt()))
         }
+
+        search_item.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                // Called when the user submits the query.
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                // Called when the query text is changed by the user.
+                if (newText != null) {
+                    viewModel.searchItems(newText)
+                }
+
+                return false
+            }
+        })
     }
 
     private fun handleNewStatus(status: ListStatus?) {
@@ -97,6 +122,7 @@ class FeedFragment : Fragment() {
     }
 
     companion object {
+
         fun newInstance() = FeedFragment()
     }
 }

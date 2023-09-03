@@ -10,7 +10,7 @@ import com.vinted.demovinted.data.models.ItemBoxViewEntity
 import kotlinx.android.synthetic.main.item_feed.view.*
 
 class FeedAdapter(
-    private val items: List<ItemBoxViewEntity>,
+    private var items: List<ItemBoxViewEntity>,
     private val onItemClick: (ItemBoxViewEntity) -> Unit
 ) : RecyclerView.Adapter<FeedAdapter.FeedViewHolder>() {
 
@@ -24,6 +24,10 @@ class FeedAdapter(
     override fun onBindViewHolder(holder: FeedViewHolder, position: Int) {
         holder.bind(items[position])
         holder.itemView.setOnClickListener { onItemClick(items[position]) }
+    }
+
+    fun setData(data: List<ItemBoxViewEntity>) {
+        this.items = data
     }
 
     inner class FeedViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

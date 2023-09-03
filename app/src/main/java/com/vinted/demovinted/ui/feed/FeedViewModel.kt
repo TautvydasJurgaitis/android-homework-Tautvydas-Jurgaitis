@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.vinted.demovinted.data.interactors.CatalogLoaderInteractor
 import com.vinted.demovinted.data.models.ItemBoxViewEntity
 import com.vinted.demovinted.data.models.ItemSeenEvent
+import com.vinted.demovinted.domain.use_case.GetSearchItemFeedUseCase
 import com.vinted.demovinted.domain.use_case.PostItemSeenUseCase
 import com.vinted.demovinted.ui.utils.ListStatus
 import com.vinted.demovinted.ui.utils.Loading
@@ -19,11 +20,15 @@ import kotlinx.coroutines.flow.onEach
 
 class FeedViewModel @ViewModelInject constructor(
     private val catalogLoaderInteractor: CatalogLoaderInteractor,
-    private val postItemSeenUseCase: PostItemSeenUseCase
+    private val postItemSeenUseCase: PostItemSeenUseCase,
+    private val getSearchItemFeedUseCase: GetSearchItemFeedUseCase
 ) : ViewModel() {
 
     val feedStatus = MutableLiveData<ListStatus>()
     private val disposables = CompositeDisposable()
+
+    val feed: MutableLiveData<List<ItemBoxViewEntity>> = MutableLiveData()
+    var page: Int = 0
 
     init {
         val disposable = catalogLoaderInteractor.dataLoaded
@@ -62,6 +67,22 @@ class FeedViewModel @ViewModelInject constructor(
             }
         }.launchIn(viewModelScope)
 
+    }
+
+    fun searchItems(searchQuery: String) {
+        getSearchItemFeedUseCase.execute(page, searchQuery).onEach {
+            it.data?.let {
+                val data: MutableList<ItemBoxViewEntity> = mutableListOf()
+                for (i in 0 until it.items.size) {
+                    data.add(ItemBoxViewEntity.fromCatalogItem(it.items[i]))
+                }
+                feed.value = data
+                page++
+            }
+            it.error.let {
+                // Error
+            }
+        }.launchIn(viewModelScope)
     }
 
     fun createImpressions(items: List<ItemBoxViewEntity>, indexes: List<Int>): List<ItemSeenEvent> {
